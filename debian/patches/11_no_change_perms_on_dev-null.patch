@@ -1,0 +1,16 @@
+Description: avoid changing permissions on debug logfile
+ Safer to simply rely on umask.
+Author: Jonas Smedegaard <dr@jones.dk>
+Bug: https://github.com/HewlettPackard/netperf/issues/26
+Bug: https://github.com/HewlettPackard/netperf/pull/27
+--- a/src/netserver.c
++++ b/src/netserver.c
+@@ -278,8 +278,6 @@
+ 
+ #if !defined(WIN32)
+ 
+-  chmod(FileName,0644);
+-
+   /* redirect stdin to "/dev/null" */
+   rd_null_fp = fopen(NETPERF_NULL,"r");
+   if (NULL == rd_null_fp) {

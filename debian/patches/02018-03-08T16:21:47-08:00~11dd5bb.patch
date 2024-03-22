@@ -1,0 +1,20 @@
+Description: netserver: fix FileName usage
+ I introduce compile breakage with previous commit:
+ https://github.com/HewlettPackard/netperf/commit/5380b1f5b67fa97f7574b73478a3cf4301f7707a
+  1) FileName is an array and not a pointer - treat it like one. :)
+  2) use correct variable name ("FileName" not "Filename")
+Author: Grant Grundler <grundler@chromium.org>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/11dd5bb
+--- a/src/netserver.c
++++ b/src/netserver.c
+@@ -256,8 +256,8 @@
+ 
+   if (where != NULL) fflush(where);
+   if (suppress_debug) {
+-    FileName = NETPERF_NULL;
+-    where = fopen(Filename, "w");
++    strncpy(FileName, NETPERF_NULL, sizeof(FileName));
++    where = fopen(FileName, "w");
+   } else {
+     snprintf(FileName, sizeof(FileName), "%s" FILE_SEP "%s",
+              DEBUG_LOG_FILE_DIR, DEBUG_LOG_FILE);

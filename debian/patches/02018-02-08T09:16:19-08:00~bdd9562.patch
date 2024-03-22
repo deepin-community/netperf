@@ -1,0 +1,37 @@
+Description: netserver: move NETPERF_NULL to common location
+ Keep WIN32 support together and out of the "mainline" code.
+Author: Grant Grundler <grundler@chromium.org>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/bdd9562
+--- a/src/netserver.c
++++ b/src/netserver.c
+@@ -162,11 +162,14 @@
+ 
+ #ifndef DEBUG_LOG_FILE_DIR
+ #if defined(WIN32)
+-#define DEBUG_LOG_FILE_DIR ""
++#define   DEBUG_LOG_FILE_DIR ""
++#define   NETPERF_NULL       "nul"
+ #elif defined(ANDROID)
+-#define DEBUG_LOG_FILE_DIR "/data/local/tmp/"
++#define   DEBUG_LOG_FILE_DIR "/data/local/tmp/"
++#define   NETPERF_NULL       "/dev/null"
+ #else
+-#define DEBUG_LOG_FILE_DIR "/tmp/"
++#define   DEBUG_LOG_FILE_DIR "/tmp/"
++#define   NETPERF_NULL       "/dev/null"
+ #endif
+ #endif /* DEBUG_LOG_FILE_DIR */
+ 
+@@ -245,12 +248,6 @@
+ void
+ open_debug_file()
+ {
+-#if !defined WIN32
+-#define NETPERF_NULL "/dev/null"
+-#else
+-#define NETPERF_NULL "nul"
+-#endif
+-
+   FILE *rd_null_fp;
+ 
+   if (where != NULL) fflush(where);

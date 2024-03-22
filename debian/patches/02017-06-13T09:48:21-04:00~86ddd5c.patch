@@ -1,0 +1,20 @@
+Description: Fix compiler warnings when compiling for FreeBSD
+Author: Andrew Gallatin <gallatin@gmail.com>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/86ddd5c
+--- a/src/netcpu_sysctl.c
++++ b/src/netcpu_sysctl.c
+@@ -8,6 +8,14 @@
+ #include <stdio.h>
+ #include <unistd.h>
+ 
++#if HAVE_STRING_H
++# include <string.h>
++#endif
++
++#if HAVE_STDLIB_H
++# include <stdlib.h>
++#endif
++
+ #if HAVE_INTTYPES_H
+ # include <inttypes.h>
+ #else

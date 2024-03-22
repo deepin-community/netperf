@@ -1,0 +1,6 @@
+version=4
+
+opts=\
+filenamemangle=s/.*?(@ANY_VERSION@@ARCHIVE_EXT@)/@PACKAGE@-$1/ \
+https://github.com/HewlettPackard/netperf/tags \
+.*?@ANY_VERSION@@ARCHIVE_EXT@

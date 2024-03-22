@@ -1,12 +1,10 @@
-This package was debianized by Erik Wenzel erik@debian.org on
-Wed, 30 Jan 2002 10:15:17 +0200
+This file is here for people to list their contributions to the
+netperf benchmark. When you enhance or fix something, put your name
+and a description of the what/where/whey/why/how here. If you like,
+feel free to include an email address. 
 
-It was downloaded from:
-https://github.com/HewlettPackard/netperf
-
-Upstream Authors:
-
-Copyright 1993-2007 Hewlett-Packard Company
+I would like to apologize in advance to anyone I've forgotten to
+include.
 
 Rick Jones <raj@cup.hp.com>
 Responsible for initial packaging and release of netperf and
@@ -54,7 +52,7 @@ His prompting finally got me off my whatever to put the confidence
 interval stuff from the guys at IBM into netperf
 
 Peter Skopp pds@cs.columbia.edu
-Fixes to make netperf more secure.
+Fixes to make netperf more secure.	
 
 Tom Wilson <tcwilson@newbridge.com>
 A fix to send_udp_rr to correct bogus throughput values.
@@ -78,6 +76,7 @@ for his help in making the tar files and such more user-friendly
 
 Michael Shuldman <michaels@inet.no>
 Improvements to the makefile and additional checks for OpenBSD
+Changes to make netperf more profiling friendly
 
 Kris Corwin
 discovery of a debug statement outside of if (debug) that may have
@@ -105,6 +104,9 @@ for pointing-out that Solaris 9 has a copy of Linux sendfile()
 Andrew Gallatin 
 for assistance with the FreeBSD sysctl() stuff, and later making it
 calibration-free
+fixes to configure to recognize Solaris 11
+fixes to netcpu_procstat.c for later linux kernels
+workarounds to get Linux to report ENOBUFS on TX queue overflows
 
 Mark Cooper
 pointing-out the need for -lresolv when compiling -DDO_DNS on RedHat
@@ -198,47 +200,110 @@ Fixes for Windows compilation under MingW/gcc.
 Scott Weitzenkamp
 Patches to enable demo mode in the UDP_STREAM test
 
+Emir Halepovic
+Feedback on the manual
 
-COPYRIGHT:
+Kouhei Sutou
+Generate netperf_version.h and netperf.spec via configure rather than
+makefile, include limits to get PathMAX on FreeBSD.
 
-              Copyright (C) 1993 Hewlett-Packard Company
-                         ALL RIGHTS RESERVED.
- 
-  The enclosed software and documentation includes copyrighted works
-  of Hewlett-Packard Co. For as long as you comply with the following
-  limitations, you are hereby authorized to (i) use, reproduce, and
-  modify the software and documentation, and to (ii) distribute the
-  software and documentation, including modifications, for
-  non-commercial purposes only.
-      
-  1.  The enclosed software and documentation is made available at no
-      charge in order to advance the general development of
-      high-performance networking products.
- 
-  2.  You may not delete any copyright notices contained in the
-      software or documentation. All hard copies, and copies in
-      source code or object code form, of the software or
-      documentation (including modifications) must contain at least
-      one of the copyright notices.
- 
-  3.  The enclosed software and documentation has not been subjected
-      to testing and quality control and is not a Hewlett-Packard Co.
-      product. At a future time, Hewlett-Packard Co. may or may not
-      offer a version of the software and documentation as a product.
-  
-  4.  THE SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS".
-      HEWLETT-PACKARD COMPANY DOES NOT WARRANT THAT THE USE,
-      REPRODUCTION, MODIFICATION OR DISTRIBUTION OF THE SOFTWARE OR
-      DOCUMENTATION WILL NOT INFRINGE A THIRD PARTY'S INTELLECTUAL
-      PROPERTY RIGHTS. HP DOES NOT WARRANT THAT THE SOFTWARE OR
-      DOCUMENTATION IS ERROR FREE. HP DISCLAIMS ALL WARRANTIES,
-      EXPRESS AND IMPLIED, WITH REGARD TO THE SOFTWARE AND THE
-      DOCUMENTATION. HP SPECIFICALLY DISCLAIMS ALL WARRANTIES OF
-      MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-  
-  5.  HEWLETT-PACKARD COMPANY WILL NOT IN ANY EVENT BE LIABLE FOR ANY
-      DIRECT, INDIRECT, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES
-      (INCLUDING LOST PROFITS) RELATED TO ANY USE, REPRODUCTION,
-      MODIFICATION, OR DISTRIBUTION OF THE SOFTWARE OR DOCUMENTATION.
- 
+Dan Yost
+Fix to fflush() each interim result in demo mode to make things
+happier for folks redirecting same to a file.
 
+Alexander Duyck
+Fixes to replace struct sockaddr_in with struct sockaddr_storage
+Fixes to UDP_RR to preclude hangs on Windows
+Fizes to UDP_RR to honour -f and -B options
+
+Anonymous
+Support for sendfile() on OSX
+
+Matt Waddel
+Fix to use vfork() instead of fork() on platforms without fork()
+
+Simon Burge <simonb@NetBSD.org>
+Fixes for *BSD CPU util.
+
+Adam Bidema
+Fixes for launching netserver children when the path to netserver.exe
+is very long. 
+
+Gisle Vanem
+MingW cnd MSDOS (djgpp) cleanups.
+
+Bruno Cornec
+Fixes to supply some missing fprintf format statements.
+
+Jose Pedro Oliveira
+Linux compilation fixes when SCTP and DCCP are enabled. Changes to
+configure.ac to allow it to inherit compiler flags from environment
+variables.
+
+Pal Baranyai
+Typo in nettest_dlpi.c
+
+Brian Haley
+Changes to allow something like netperf -H ::1 to work
+
+Frank Schuster
+Discovering that FreeBSD 8.X also does not need an SCTP library
+
+Josselin Costanzi
+DEBUG_LOG_FILE patch for Android
+
+Dongsheng Song
+Assorted Windows fixes
+
+Hushan Jia
+Fix to actually run SCTP_RR_MANY when requested
+
+David MacMahon davidm@astro.berkeley.edu
+Fix to allow configure in a build directory.
+Remove duplicate htonl in recv_udp_stream().
+
+Masanari Iida
+Cleanups for the manual.
+
+Amir Vidai
+Patch from which changes to set SO_PRIORITY were based.
+
+Alexander Duyck
+Uncovering an out of bounds access of the netperf_output_source array.
+
+Bjoern A. Zeeb - a patch to enable netperf to correctly manipulate
+IPv6 addresses in the control message.
+
+Shachar Raindel - a patch to bring the "get linux to emit ENOBUFS"
+functionality from classic netperf tests to the omni tests.
+
+Chema Gonzalez - fixes for some assorted warnings.
+
+Dave Taht - changes for symbolic handling of TOS values
+
+David Ahern - fix for an incorrect pointer check
+
+Jim Nell - Fix for Solaris 11.1 compilation problem in dscp.c
+
+Steven Noonan - found a variable name bug for the ever unlikely case
+of a platform not defining SO_SNDBUF
+
+Amos Kong - a fix to report the correct send size in a migrated
+TCP_MAERTS test. Bug reported by Wenli Quan
+
+Eric Dumazet - improve the performance of launching many netperfs at
+once by obtaining the 16 bytes of randomness for the UUID via slightly
+different means.  Dump TCP_INFO results to stderr when either debug >
+1 or DUMP_TCP_INFO envvar is set.  Bump the listen backlog for the
+control endpoint to 1024.
+
+David Decotigny - a series of cleanups and enhancements in the area of
+CPU utilization reporting and making certain that sanity checks are
+made on the size of things being passed in control messages.
+
+Yaogong Wang - enable support for the -N test-specific option to have
+the UDP socket connected at the netserver side.
+
+Weijia Song - a fix inspiration for a NULL pointer problem.
+
+Gisle Vanem - some Windows compilation fixes

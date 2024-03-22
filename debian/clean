@@ -1,0 +1,4 @@
+config.h.in
+configure
+doc/netperf.html
+doc/netperf.pdf

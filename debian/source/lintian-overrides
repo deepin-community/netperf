@@ -1,0 +1,2 @@
+# source is doc/netperf.texi
+source-is-missing [doc/netperf.html]

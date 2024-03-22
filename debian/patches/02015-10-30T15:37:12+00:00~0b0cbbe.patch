@@ -1,0 +1,49 @@
+Description: Some include file changes via/inspired-by Elliott Hughes
+Author: raj <raj@5bbd99f3-5903-0410-b283-f1d88047b228>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/0b0cbbe
+--- a/AUTHORS
++++ b/AUTHORS
+@@ -308,3 +308,5 @@
+ Weijia Song - a fix inspiration for a NULL pointer problem.
+ 
+ Gisle Vanem - some Windows compilation fixes
++
++Elliott Hughes - some fixes for Android compilation
+\ No newline at end of file
+--- a/configure.ac
++++ b/configure.ac
+@@ -38,7 +38,7 @@
+ AC_HEADER_SYS_WAIT
+ 
+ # lets keep this in some semblence of alphabetical order
+-AC_CHECK_HEADERS([arpa/inet.h endian.h errno.h fcntl.h ifaddrs.h limits.h linux/tcp.h linux/socket.h malloc.h netdb.h netinet/in.h netinet/sctp.h sched.h signal.h stdlib.h string.h strings.h syscall.h sys/ioctl.h sys/mman.h sys/param.h sys/socket.h sys/stat.h sys/time.h sys/wait.h sys/ipc.h sys/sockio.h sys/sysinfo.h sys/wait.h stdlib.h unistd.h netinet/in_systm.h netinet/ip.h])
++AC_CHECK_HEADERS([arpa/inet.h endian.h errno.h fcntl.h ifaddrs.h limits.h linux/tcp.h linux/socket.h malloc.h netdb.h netinet/in.h netinet/sctp.h sched.h signal.h stdlib.h string.h strings.h syscall.h sys/ioctl.h sys/mman.h sys/param.h sys/socket.h sys/stat.h sys/time.h sys/wait.h sys/ipc.h sys/sockio.h sys/sysinfo.h sys/wait.h stdlib.h unistd.h netinet/in_systm.h netinet/ip.h sys/sendfile.h])
+ 
+ # Some platforms require these.  There may be a better way.
+ AC_HAVE_LIBRARY(socket)
+--- a/src/net_uuid.c
++++ b/src/net_uuid.c
+@@ -29,6 +29,10 @@
+ #include <string.h>
+ #include <fcntl.h>
+ 
++#if defined(HAVE_UNISTD_H)
++#include <unistd.h>
++#endif
++
+ #if defined(HAVE_INTTYPES_H)
+ #include <inttypes.h>
+ #endif
+--- a/src/netlib.h
++++ b/src/netlib.h
+@@ -434,6 +434,10 @@
+   (((return_value) == SOCKET_ERROR) && (errno == WSAEWOULDBLOCK))
+ #endif
+ 
++#if defined(HAVE_SYS_SENDFILE_H)
++#include <sys/sendfile.h>
++#endif
++
+ #ifdef HAVE_SENDFILE
+ 
+ #endif /* HAVE_SENDFILE */

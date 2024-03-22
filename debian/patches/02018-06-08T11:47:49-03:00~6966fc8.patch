@@ -1,0 +1,21 @@
+Description: netserver: suppress debug log by default
+ The file is hardly used
+ and now that it is being saved on /var/log by default,
+ netserver may fail to start as a normal user.
+ .
+ So simply suppress it by default.
+ One can enable it again
+ just by issuing at least one '-d' command line option.
+Author: Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/6966fc8
+--- a/src/netserver.c
++++ b/src/netserver.c
+@@ -204,7 +204,7 @@
+ int      not_inetd;
+ int      want_daemonize;
+ int      spawn_on_accept;
+-int      suppress_debug = 0;
++int      suppress_debug = 1;
+ 
+ extern	char	*optarg;
+ extern	int	optind, opterr;

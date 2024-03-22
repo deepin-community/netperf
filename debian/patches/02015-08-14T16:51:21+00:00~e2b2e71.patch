@@ -1,0 +1,17 @@
+Description: fix use correct private IP in example script
+ It would be good to select the correct private IP when using private
+ IPs rather than that of some other destination.  Otherwise, we may
+ end-up selecting an instance running on the same compute node.
+Author: raj <raj@5bbd99f3-5903-0410-b283-f1d88047b228>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/e2b2e71
+--- a/doc/examples/runremrandomniaggdemo.sh
++++ b/doc/examples/runremrandomniaggdemo.sh
+@@ -61,7 +61,7 @@
+ 	TARGET=${NETSERVERS[$netserid]}
+ 	if [ $USE_PRIVATE_IP -eq 1 ]
+         then
+-	    TARGET=${NETSERVERS_PRIV[`expr $i % $NUM_NETSERVERS`]}
++	    TARGET=${NETSERVERS_PRIV[${netserid}]}
+         fi
+ 	echo "Starting netperfs on $SOURCE targeting ${TARGET} for $TEST" | tee -a $TESTLOG
+ 	id=`printf "%.5d" $i`

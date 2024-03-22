@@ -1,0 +1,41 @@
+Description: netserver: use mkstemp to create/open debug file
+Author: Grant Grundler <grundler@chromium.org>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/5380b1f
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=413658
+--- a/src/netserver.c
++++ b/src/netserver.c
+@@ -254,20 +254,23 @@
+   FILE *rd_null_fp;
+ 
+   if (where != NULL) fflush(where);
+-
+-  snprintf(FileName,
+-	   sizeof(FileName),
++  if (suppress_debug) {
++    FileName = NETPERF_NULL;
++    where = fopen(Filename, "w");
++  } else {
++    snprintf(FileName, sizeof(FileName),
+ #if defined(WIN32)
+-	   "%s\\%s_%d",
+-	   getenv("TEMP"),
++	     "%s\\%s_XXXXXX", getenv("TEMP"),
+ #else
+-	   "%s_%d",
++	     "%s_XXXXXX",
+ #endif
+-	   DEBUG_LOG_FILE,
+-	   getpid());
+-  if ((where = fopen((suppress_debug) ? NETPERF_NULL : FileName,
+-		     "w")) == NULL) {
+-    perror("netserver: debug file");
++	     DEBUG_LOG_FILE);
++    where = mkstemp(FileName);
++  }
++
++  if (where == NULL) {
++    fprintf(stderr, "netserver: %s debug file : %s",
++	    FileName, strerror(errno));
+     exit(1);
+   }
+ 

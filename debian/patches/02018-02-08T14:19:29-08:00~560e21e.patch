@@ -1,0 +1,20 @@
+Description: netserver: comply with FHS
+ Filesystem Hierarchy Standard requires /var/log be used to store logs.
+ Debian, Gentoo, and others trying to comply with FHS
+ already carry similar patches to netperf:
+ https://sources.debian.org/patches/netperf/2.6.0-2.1/20_fix_debug_file_location.diff/
+Author: Grant Grundler <grundler@chromium.org>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/560e21e
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=413658
+--- a/src/netserver.c
++++ b/src/netserver.c
+@@ -170,7 +170,8 @@
+ #define   NETPERF_NULL       "/dev/null"
+ #define   FILE_SEP       "/"
+ #else
+-#define   DEBUG_LOG_FILE_DIR "/tmp/"
++/* comply with FHS: http://www.pathname.com/fhs/pub/fhs-2.3.html */
++#define   DEBUG_LOG_FILE_DIR "/var/log/"
+ #define   NETPERF_NULL       "/dev/null"
+ #define   FILE_SEP       "/"
+ #endif
