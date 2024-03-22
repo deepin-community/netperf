@@ -1,0 +1,13 @@
+Description: Ensure that stdint.h and inttypes.h get included in a tar/zip of sources.
+Author: raj <raj@5bbd99f3-5903-0410-b283-f1d88047b228>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/d9f6820
+--- a/src/missing/Makefile.am
++++ b/src/missing/Makefile.am
+@@ -1,5 +1,7 @@
+ SUBDIRS = m4
+ 
++EXTRA_DIST = stdint.h inttypes.h
++
+ if NEED_LIBCOMPAT 
+ noinst_LIBRARIES = libcompat.a
+ libcompat_a_SOURCES = getaddrinfo.h

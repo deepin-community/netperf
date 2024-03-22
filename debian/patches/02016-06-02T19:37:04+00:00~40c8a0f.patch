@@ -1,0 +1,452 @@
+Description: Changes in support of Windows compilation.
+Author: raj <raj@5bbd99f3-5903-0410-b283-f1d88047b228>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/40c8a0f
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=798789
+--- a/AUTHORS
++++ b/AUTHORS
+@@ -309,4 +309,9 @@
+ 
+ Gisle Vanem - some Windows compilation fixes
+ 
+-Elliott Hughes - some fixes for Android compilation
+\ No newline at end of file
++Elliott Hughes - some fixes for Android compilation
++
++Sebastian Moeller - fixes to make net_uuid.c happy on OSX 10.10
++
++Andrew Kirch - patch for inline not being appy on OSX - provided the
++               last straw to go ahead and remove the inlining entirely
+\ No newline at end of file
+--- a/src/NetPerfDir/sources
++++ b/src/NetPerfDir/sources
+@@ -25,12 +25,6 @@
+ 	..\netsh.c \
+ 	..\nettest_bsd.c \
+ 	..\nettest_omni.c \
+-	..\netsec_win.c \
+-	..\netdrv_none.c \
+-	..\netslot_none.c \
+-	..\netsys_none.c \
+-	..\netrt_none.c \
+-	..\netfirewall_none.c \
+ 	..\net_uuid.c \
+ 	..\netperf.c \
+ 	..\dscp.c \
+--- a/src/NetServerDir/sources
++++ b/src/NetServerDir/sources
+@@ -25,12 +25,6 @@
+ 	..\netsh.c \
+ 	..\nettest_bsd.c \
+ 	..\nettest_omni.c \
+-	..\netsec_win.c \
+-	..\netdrv_none.c \
+-	..\netslot_none.c \
+-	..\netsys_none.c \
+-	..\netrt_none.c \
+-	..\netfirewall_none.c \
+ 	..\net_uuid.c \
+ 	..\netserver.c \
+ 	..\dscp.c \
+--- a/src/net_uuid.c
++++ b/src/net_uuid.c
+@@ -42,6 +42,7 @@
+ #define UUIDS_PER_TICK 1024
+ 
+ #ifdef WIN32
++#define WIN32_LEAN_AND_MEAN 1
+ #include <windows.h>
+ #include "missing\stdint.h"
+ #define snprintf _snprintf
+@@ -81,7 +82,6 @@
+   char nodeID[6];
+ } uuid_node_t;
+ 
+-#undef uuid_t
+ typedef struct {
+   uint32_t  time_low;
+   uint16_t  time_mid;
+@@ -89,7 +89,7 @@
+   uint8_t   clock_seq_hi_and_reserved;
+   uint8_t   clock_seq_low;
+   uint8_t   node[6];
+-} uuid_t;
++} netperf_uuid_t;
+ 
+ /* some forward declarations.  kind of wimpy to do that but heck, we
+    are all friends here right?  raj 20081024 */
+@@ -197,7 +197,7 @@
+ }
+ 
+ /* puid -- print a UUID */
+-void puid(uuid_t u)
++void puid(netperf_uuid_t u)
+ {
+   int i;
+ 
+@@ -210,7 +210,7 @@
+ }
+ 
+ /* snpuid -- print a UUID in the supplied buffer */
+-void snpuid(char *str, size_t size, uuid_t u) {
++void snpuid(char *str, size_t size, netperf_uuid_t u) {
+   int i;
+   char *tmp = str;
+ 
+@@ -295,7 +295,7 @@
+ 
+ /* format_uuid_v1 -- make a UUID from the timestamp, clockseq,
+    and node ID */
+-static void format_uuid_v1(uuid_t* uuid, uint16_t clock_seq,
++static void format_uuid_v1(netperf_uuid_t* uuid, uint16_t clock_seq,
+                     uuid_time_t timestamp, uuid_node_t node)
+ {
+   /* Construct a version 1 uuid with the information we've gathered
+@@ -312,7 +312,7 @@
+ }
+ 
+ /* uuid_create -- generator a UUID */
+-int uuid_create(uuid_t *uuid)
++int uuid_create(netperf_uuid_t *uuid)
+ {
+   uuid_time_t timestamp;
+   uint16_t clockseq;
+@@ -331,7 +331,7 @@
+ }
+ 
+ void get_uuid_string(char *uuid_str, size_t size) {
+-  uuid_t u;
++  netperf_uuid_t u;
+ 
+   uuid_create(&u);
+   snpuid(uuid_str,size,u);
+@@ -344,7 +344,7 @@
+ int
+ main(int argc, char *argv[])
+ {
+-  uuid_t u;
++  netperf_uuid_t u;
+   char  uuid_str[38];
+ #if 0
+   uuid_create(&u);
+--- a/src/netlib.c
++++ b/src/netlib.c
+@@ -110,6 +110,7 @@
+ #include <time.h>
+ #include <winsock2.h>
+ #define netperf_socklen_t socklen_t
++#define WIN32_LEAN_AND_MEAN 1
+ #include <windows.h>
+ #include <mmsystem.h>
+ /* the only time someone should need to define DONT_IPV6 in the
+@@ -119,8 +120,6 @@
+ #include <ws2tcpip.h>
+ #endif
+ 
+-#include <windows.h>
+-
+ #define SIGALRM (14)
+ #define sleep(x) Sleep((x)*1000)
+ 
+@@ -4013,11 +4012,7 @@
+   }
+ }
+ 
+-#ifdef WIN32
+-__forceinline void demo_interval_display(double actual_interval)
+-#else
+-  inline void demo_interval_display(double actual_interval)
+-#endif
++void demo_interval_display(double actual_interval)
+ {
+   static int count = 0;
+   struct timeval now;
+@@ -4076,15 +4071,7 @@
+    important compilers have supported such a construct so it should
+    not be a big deal. raj 2012-01-23 */
+ 
+-#ifdef WIN32
+-/* It would seem that the Microsoft compiler will not inline across
+-   source files. So there is little point in having an inline
+-   directive in that situation.  Of course that makes me wonder if an
+-   inline directive has to appear in netlib.h... */
+ void demo_interval_tick(uint32_t units)
+-#else
+-  inline void demo_interval_tick(uint32_t units)
+-#endif
+ {
+   double actual_interval = 0.0;
+ 
+--- a/src/netlib.h
++++ b/src/netlib.h
+@@ -290,6 +290,17 @@
+   double dummy;
+ };
+ 
++#ifdef WIN32
++#ifndef _OFF_T_DEFINED
++typedef long _off_t;                /* file offset value */
++#if     !__STDC__
++/* Non-ANSI name for compatibility */
++typedef long off_t;
++#endif
++#define _OFF_T_DEFINED
++#endif  //_OFF_T_DEFINED
++#endif  //WIN32
++
+ struct ring_elt {
+   struct ring_elt *next;  /* next element in the ring */
+   char *buffer_base;      /* in case we have to free it at somepoint */
+--- a/src/netperf.c
++++ b/src/netperf.c
+@@ -67,6 +67,7 @@
+ 
+ #ifdef WIN32
+ #include <winsock2.h>
++#define WIN32_LEAN_AND_MEAN 1
+ #include <windows.h>
+ #include "missing\stdint.h"
+ #endif /* WIN32 */
+--- a/src/netserver.c
++++ b/src/netserver.c
+@@ -126,6 +126,7 @@
+ #include <ws2tcpip.h>
+ #endif
+ 
++#define WIN32_LEAN_AND_MEAN 1
+ #include <windows.h>
+ 
+ #include "missing\stdint.h"
+--- a/src/nettest_bsd.c
++++ b/src/nettest_bsd.c
+@@ -122,6 +122,8 @@
+ #ifndef DONT_IPV6
+ #include <ws2tcpip.h>
+ #endif
++
++#define WIN32_LEAN_AND_MEAN 1
+ #include <windows.h>
+ 
+ #define sleep(x) Sleep((x)*1000)
+--- a/src/nettest_omni.c
++++ b/src/nettest_omni.c
+@@ -116,6 +116,7 @@
+ #ifndef DONT_IPV6
+ #include <ws2tcpip.h>
+ #endif
++#define WIN32_LEAN_AND_MEAN 1
+ #include <windows.h>
+ 
+ #define sleep(x) Sleep((x)*1000)
+@@ -712,7 +713,74 @@
+ int have_pktinfo = 0;
+ #ifdef IP_PKTINFO
+ struct in_pktinfo in_pktinfo;
+-#endif
++
++#ifdef WIN32
++//NOTE: Linux's msghdr is very similar to Windows' WSAMSG, but the member names are different :(
++
++//#define cmsghdr WSACMSGHDR
++#define CMSG_FIRSTHDR WSA_CMSG_FIRSTHDR
++#define CMSG_NXTHDR WSA_CMSG_NXTHDR
++#define CMSG_DATA WSA_CMSG_DATA
++#define CMSG_SPACE WSA_CMSG_SPACE
++#define CMSG_LEN WSA_CMSG_LEN
++
++
++// Note: the Winsock2 function WSARecvMsg is NOT defined directly in the MSFT headers; it must be determined via an IOCTL interface.
++// Taken from MSFT example: https://github.com/theonlylawislove/WindowsSDK7-Samples/blob/master/netds/winsock/recvmsg/rmmc.cpp
++
++/*
++ * WSARecvMsg -- support for receiving ancilliary
++ * data/control information with a message.
++ */
++typedef
++INT
++(PASCAL FAR * LPFN_WSARECVMSG) (
++    __in SOCKET s, 
++    __inout LPWSAMSG lpMsg, 
++    __out_opt LPDWORD lpdwNumberOfBytesRecvd, 
++    __inout_opt LPWSAOVERLAPPED lpOverlapped, 
++    __in_opt LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine
++    );
++
++#define WSAID_WSARECVMSG \
++    {0xf689d7c8,0x6f1f,0x436b,{0x8a,0x53,0xe5,0x4f,0xe3,0x51,0xc3,0x22}}
++
++LPFN_WSARECVMSG pWSARecvMsg = NULL;
++
++LPFN_WSARECVMSG GetWSARecvMsgFunctionPointer()
++{ 
++    LPFN_WSARECVMSG     lpfnWSARecvMsg = NULL; 
++    GUID                guidWSARecvMsg = WSAID_WSARECVMSG; 
++    SOCKET              sock = INVALID_SOCKET; 
++    DWORD               dwBytes = 0; 
++	int rc;
++
++    sock = socket(AF_INET6,SOCK_DGRAM,0); 
++
++    rc= WSAIoctl(sock,  
++                 SIO_GET_EXTENSION_FUNCTION_POINTER,  
++                 &guidWSARecvMsg,  
++                 sizeof(guidWSARecvMsg),  
++                 &lpfnWSARecvMsg,  
++                 sizeof(lpfnWSARecvMsg),  
++                 &dwBytes,  
++                 NULL,  
++                 NULL 
++                 );
++
++    closesocket(sock); 
++
++	if (rc == SOCKET_ERROR) {
++        //print an error message, such as "WSAIoctl SIO_GET_EXTENSION_FUNCTION_POINTER failed for WSARecvMsg"
++		lpfnWSARecvMsg = NULL;  // Just to be sure...
++    }
++
++
++    return lpfnWSARecvMsg; 
++} 
++
++#endif /* WIN32 */
++#endif /* IP_PKTINFO */
+ 
+ char *direction_to_str(int direction) {
+   if (NETPERF_RECV_ONLY(direction)) return "Receive";
+@@ -2841,14 +2909,24 @@
+ static
+ int send_pktinfo(SOCKET data_socket, char *buffer, int len, struct sockaddr *destination, int destlen) {
+ #ifdef IP_PKTINFO
++//NOTE: Linux's msghdr is very similar to Windows' WSAMSG, but the member names are different :(
++#ifndef WIN32
+   struct msghdr msg;
+   struct iovec iovec[1];
++#else
++  struct _WSAMSG msg;
++  struct _WSABUF iovec[1];
++  DWORD BytesSent = 0;
++  int rc = 0;
++#endif
+   char msg_control[512];
+   struct cmsghdr *cmsg;
+   int cmsg_space = 0;
+ 
++#ifndef WIN32
+   iovec[0].iov_base = buffer;
+   iovec[0].iov_len = len;
++
+   msg.msg_name = destination;
+   msg.msg_namelen = destlen;
+   msg.msg_iov = iovec;
+@@ -2856,6 +2934,18 @@
+   msg.msg_control = msg_control;
+   msg.msg_controllen = sizeof(msg_control);
+   msg.msg_flags = 0;
++#else
++  iovec[0].buf = buffer;
++  iovec[0].len = len;
++
++  msg.name = destination;
++  msg.namelen = destlen;
++  msg.lpBuffers = iovec;
++  msg.dwBufferCount = 1;
++  msg.Control.buf = msg_control;
++  msg.Control.len = sizeof(msg_control);
++  msg.dwFlags = 0;
++#endif //WIN32
+ 
+   cmsg = CMSG_FIRSTHDR(&msg);
+   if (have_pktinfo) {
+@@ -2865,9 +2955,16 @@
+     *(struct in_pktinfo*)CMSG_DATA(cmsg) = in_pktinfo;
+     cmsg_space += CMSG_SPACE(sizeof(in_pktinfo));
+   }
++#ifndef WIN32
+   msg.msg_controllen = cmsg_space;
+   return sendmsg(data_socket, &msg, 0);
+ #else
++  msg.Control.len = cmsg_space;
++  rc = WSASendMsg(data_socket, &msg, 0, &BytesSent, NULL, NULL);
++  //+*+ If rc != 0 we should call WSAGetLastError and print some kind of error msg...
++  return BytesSent;
++#endif
++#else
+   return -1;
+ #endif /* IP_PKTINFO */
+ }
+@@ -3083,8 +3180,16 @@
+ int recv_pktinfo(SOCKET data_socket, char *message_ptr, int bytes_to_recv,  int my_flags, struct sockaddr *source, netperf_socklen_t *sourcelen) {
+ 
+ #ifdef IP_PKTINFO
++//NOTE: Linux's msghdr is very similar to Windows' WSAMSG, but the member names are different :(
++#ifndef WIN32
+   struct iovec  my_iovec;
+   struct msghdr my_header;
++#else
++  struct _WSAMSG my_header;
++  struct _WSABUF my_iovec;
++  DWORD BytesRecvd = 0;
++  int rc;
++#endif
+   struct cmsghdr *cmsg;
+   struct in_pktinfo *pktinfo;
+ 
+@@ -3092,6 +3197,7 @@
+   int onoff = 1;
+   int ret;
+ 
++#ifndef WIN32
+   my_iovec.iov_base = message_ptr;
+   my_iovec.iov_len = bytes_to_recv;
+ 
+@@ -3101,13 +3207,31 @@
+   my_header.msg_iovlen = 1;
+   my_header.msg_control = control_buf;
+   my_header.msg_controllen = sizeof(control_buf);
++#else
++  my_iovec.buf = message_ptr;
++  my_iovec.len = bytes_to_recv;
+ 
++  my_header.name = source;
++  my_header.namelen = *sourcelen;
++  my_header.lpBuffers = &my_iovec;
++  my_header.dwBufferCount = 1;
++  my_header.Control.buf = control_buf;
++  my_header.Control.len = sizeof(control_buf);
++  my_header.dwFlags = 0;
++#endif
+   /* not going to bother checking, if it doesn't work we are no
+      worse-off than we were before. we are going to ignore IPv6 for
+      the time being */
+-  setsockopt(data_socket, IPPROTO_IP, IP_PKTINFO, &onoff, sizeof(onoff));
++  setsockopt(data_socket, IPPROTO_IP, IP_PKTINFO, (char *)&onoff, sizeof(onoff));
+   
++#ifndef WIN32
+   ret = recvmsg(data_socket, &my_header, 0);
++#else
++  if (pWSARecvMsg == NULL) pWSARecvMsg = GetWSARecvMsgFunctionPointer();
++  rc = pWSARecvMsg(data_socket, &my_header, &BytesRecvd, NULL, NULL);
++  //+*+ If rc != 0 we should call WSAGetLastError and print some kind of error msg...
++  ret = BytesRecvd;
++#endif  //WIN32
+ 
+   if (ret >= 0) {
+     struct sockaddr_in me;
+@@ -3124,7 +3248,7 @@
+   }
+ 
+   onoff = 0;
+-  setsockopt(data_socket, IPPROTO_IP, IP_PKTINFO, &onoff, sizeof(onoff));
++  setsockopt(data_socket, IPPROTO_IP, IP_PKTINFO, (char *)&onoff, sizeof(onoff));
+ 
+   return ret;
+ #else
+@@ -3571,7 +3695,7 @@
+       setsockopt(temp_socket, 
+ 		 SOL_SOCKET,
+ 		 SO_DEBUG,
+-		 &one,
++		 (char *)&one,
+ 		 sizeof(one));
+     }
+   }

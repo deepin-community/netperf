@@ -1,0 +1,396 @@
+Description: Some slight doc tweaks and a FreeBSD enhancement from Andrew Gallatin.
+Author: raj <raj@5bbd99f3-5903-0410-b283-f1d88047b228>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/af09e8f
+--- /dev/null
++++ b/doc/examples/runremrandomniaggdemo.py
+@@ -0,0 +1,41 @@
++#!/usr/bin/python -u
++
++import logging
++import argparse
++import paramiko
++import csv
++
++def read_netperfs(netperfs_file) :
++
++    with open(netperfs_file) as csvfile:
++        reader = csv.DictReader(csvfile)
++        for row in reader:
++            print(row['netperfs'], row['netperfs_priv'], row['netperfs_host'])
++
++
++def setup_parser():
++
++    parser = argparse.ArgumentsParser()
++
++    parser.add_argument('-n','--netperfs',
++                        help="Specify a list of systems on which to run netperf");
++    parser.add_argument('-N','--netservers',
++                        help="Specify a list of systems on which netserver runs")
++
++    parser.add_argument('--allow-same-host',
++                        help="Allow a netperf/netserver pairing on the same host",
++                        action="store_true")
++
++    parser.add_argument('--allow-same-instance',
++                        help="Allow a netperf/netserver pairing on the same instance",
++                        action="store_true")
++
++    return parser
++
++if __name__ == '__main__':
++    print "Let's run some netperf"
++
++    setup_parser();
++
++    args = parser.parse_args()
++
+--- a/doc/netperf.info
++++ b/doc/netperf.info
+@@ -4,7 +4,7 @@
+ This is Rick Jones' feeble attempt at a Texinfo-based manual for the
+ netperf benchmark.
+ 
+-   Copyright (C) 2005-2012 Hewlett-Packard Company
++   Copyright (C) 2005-2015 Hewlett-Packard Company
+ 
+      Permission is granted to copy, distribute and/or modify this
+      document per the terms of the netperf source license, a copy of
+@@ -20,7 +20,7 @@
+ This is Rick Jones' feeble attempt at a Texinfo-based manual for the
+ netperf benchmark.
+ 
+-   Copyright (C) 2005-2012 Hewlett-Packard Company
++   Copyright (C) 2005-2015 Hewlett-Packard Company
+ 
+      Permission is granted to copy, distribute and/or modify this
+      document per the terms of the netperf source license, a copy of
+@@ -222,8 +222,8 @@
+    The bits corresponding to each discrete release of netperf are
+ tagged (http://www.netperf.org/svn/netperf2/tags) for retrieval via
+ subversion.  For example, there is a tag for the first version
+-corresponding to this version of the manual - netperf 2.6.0
+-(http://www.netperf.org/svn/netperf2/tags/netperf-2.6.0).  Those
++corresponding to this version of the manual - netperf 2.7.0
++(http://www.netperf.org/svn/netperf2/tags/netperf-2.7.0).  Those
+ wishing to be on the bleeding edge of netperf development can use
+ subversion to grab the top of trunk
+ (http://www.netperf.org/svn/netperf2/trunk).  When fixing bugs or
+@@ -3754,23 +3754,23 @@
+ 
+ `LOCAL_SYSNAME'
+      The name of the OS (eg "Linux") running on the system on which
+-     netperf was running. Units: ASCII Text
++     netperf was running. Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_SYSTEM_MODEL'
+      The model name of the system on which netperf was running. Units:
+-     ASCII Text.
++     ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_RELEASE'
+      The release name/number of the OS running on the system on which
+-     netperf  was running. Units: ASCII Text
++     netperf  was running. Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_VERSION'
+      The version number of the OS running on the system on which netperf
+-     was running. Units: ASCII Text
++     was running. Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_MACHINE'
+      The machine architecture of the machine on which netperf was
+-     running. Units: ASCII Text.
++     running. Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `REMOTE_SYSNAME'
+ 
+@@ -3782,61 +3782,65 @@
+ 
+ `REMOTE_MACHINE'
+      These are all like their "LOCAL_" counterparts only for the
+-     netserver rather than netperf.
++     netserver rather than netperf.  Disabled in 2.7.0.
+ 
+ `LOCAL_INTERFACE_NAME'
+      The name of the probable egress interface through which the data
+      connection went on the system running netperf. Example: eth0.
+-     Units: ASCII Text.
++     Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_INTERFACE_VENDOR'
+      The vendor ID of the probable egress interface through which
+      traffic on the data connection went on the system running netperf.
+      Units: Hexadecimal IDs as might be found in a `pci.ids' file or at
+-     the PCI ID Repository (http://pciids.sourceforge.net/).
++     the PCI ID Repository (http://pciids.sourceforge.net/).  Disabled
++     in 2.7.0.
+ 
+ `LOCAL_INTERFACE_DEVICE'
+      The device ID of the probable egress interface through which
+      traffic on the data connection went on the system running netperf.
+      Units: Hexadecimal IDs as might be found in a `pci.ids' file or at
+-     the PCI ID Repository (http://pciids.sourceforge.net/).
++     the PCI ID Repository (http://pciids.sourceforge.net/).  Disabled
++     in 2.7.0.
+ 
+ `LOCAL_INTERFACE_SUBVENDOR'
+      The sub-vendor ID of the probable egress interface through which
+      traffic on the data connection went on the system running netperf.
+      Units: Hexadecimal IDs as might be found in a `pci.ids' file or at
+-     the PCI ID Repository (http://pciids.sourceforge.net/).
++     the PCI ID Repository (http://pciids.sourceforge.net/).  Disabled
++     in 2.7.0.
+ 
+ `LOCAL_INTERFACE_SUBDEVICE'
+      The sub-device ID of the probable egress interface through which
+      traffic on the data connection went on the system running netperf.
+      Units: Hexadecimal IDs as might be found in a `pci.ids' file or at
+-     the PCI ID Repository (http://pciids.sourceforge.net/).
++     the PCI ID Repository (http://pciids.sourceforge.net/).  Disabled
++     in 2.7.0.
+ 
+ `LOCAL_DRIVER_NAME'
+      The name of the driver used for the probable egress interface
+      through which traffic on the data connection went on the system
+-     running netperf. Units: ASCII Text.
++     running netperf. Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_DRIVER_VERSION'
+      The version string for the driver used for the probable egress
+      interface through which traffic on the data connection went on the
+-     system running netperf. Units: ASCII Text.
++     system running netperf. Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_DRIVER_FIRMWARE'
+      The firmware version for the driver used for the probable egress
+      interface through which traffic on the data connection went on the
+-     system running netperf. Units: ASCII Text.
++     system running netperf. Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_DRIVER_BUS'
+      The bus address of the probable egress interface through which
+      traffic on the data connection went on the system running netperf.
+-     Units: ASCII Text.
++     Units: ASCII Text.  Disabled in 2.7.0.
+ 
+ `LOCAL_INTERFACE_SLOT'
+      The slot ID of the probable egress interface through which traffic
+      on the data connection went on the system running netperf. Units:
+-     ASCII Text.
++     ASCII Text.  Disabled in 2.7.0.
+ 
+ `REMOTE_INTERFACE_NAME'
+ 
+@@ -3858,7 +3862,7 @@
+ 
+ `REMOTE_INTERFACE_SLOT'
+      These are all like their "LOCAL_" counterparts only for the
+-     netserver rather than netperf.
++     netserver rather than netperf.  Disabled in 2.7.0.
+ 
+ `LOCAL_INTERVAL_USECS'
+      The interval at which bursts of operations (sends, receives,
+@@ -3912,7 +3916,8 @@
+ 
+ `REMOTE_SECURITY_SPECIFIC'
+      A bunch of stuff related to what sort of security mechanisms (eg
+-     SELINUX) were enabled on the systems during the test.
++     SELINUX) were enabled on the systems during the test.  Disabled in
++     2.7.0.
+ 
+ `RESULT_BRAND'
+      The string specified by the user with the global `-B' option.
+@@ -4352,13 +4357,13 @@
+ Node: Migrated Tests140159
+ Node: Omni Output Selection142264
+ Node: Omni Output Selectors145247
+-Node: Other Netperf Tests174980
+-Node: CPU rate calibration175415
+-Node: UUID Generation177783
+-Node: Address Resolution178499
+-Node: Enhancing Netperf180475
+-Node: Netperf4181970
+-Node: Concept Index182875
+-Node: Option Index185201
++Node: Other Netperf Tests175368
++Node: CPU rate calibration175803
++Node: UUID Generation178171
++Node: Address Resolution178887
++Node: Enhancing Netperf180863
++Node: Netperf4182358
++Node: Concept Index183263
++Node: Option Index185589
+ 
+ End Tag Table
+--- a/doc/netperf.texi
++++ b/doc/netperf.texi
+@@ -1,14 +1,14 @@
+ \input texinfo   @c -*-texinfo-*-
+ @c %**start of header
+ @setfilename netperf.info
+-@settitle Care and Feeding of Netperf 2.6.X
++@settitle Care and Feeding of Netperf 2.7.X
+ @c %**end of header
+ 
+ @copying
+ This is Rick Jones' feeble attempt at a Texinfo-based manual for the
+ netperf benchmark. 
+ 
+-Copyright @copyright{} 2005-2012 Hewlett-Packard Company
++Copyright @copyright{} 2005-2015 Hewlett-Packard Company
+ @quotation
+ Permission is granted to copy, distribute and/or modify this document
+ per the terms of the netperf source license, a copy of which can be
+@@ -18,7 +18,7 @@
+ 
+ @titlepage
+ @title Care and Feeding of Netperf
+-@subtitle Versions 2.6.0 and Later
++@subtitle Versions 2.7.0 and Later
+ @author Rick Jones @email{rick.jones2@@hp.com}
+ @c this is here to start the copyright page
+ @page
+@@ -249,8 +249,8 @@
+ @uref{http://www.netperf.org/svn/netperf2/tags,tagged} for retrieval
+ via subversion.  For example, there is a tag for the first version
+ corresponding to this version of the manual - 
+-@uref{http://www.netperf.org/svn/netperf2/tags/netperf-2.6.0,netperf
+-2.6.0}.  Those wishing to be on the bleeding edge of netperf
++@uref{http://www.netperf.org/svn/netperf2/tags/netperf-2.7.0,netperf
++2.7.0}.  Those wishing to be on the bleeding edge of netperf
+ development can use subversion to grab the
+ @uref{http://www.netperf.org/svn/netperf2/trunk,top of trunk}.  When
+ fixing bugs or making enhancements, patches against the top-of-trunk
+@@ -3794,72 +3794,72 @@
+ netserver rather than netperf.
+ @item LOCAL_SYSNAME
+ The name of the OS (eg ``Linux'') running on the system on which
+-netperf was running. Units: ASCII Text
++netperf was running. Units: ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_SYSTEM_MODEL
+ The model name of the system on which netperf was running. Units:
+-ASCII Text.
++ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_RELEASE
+ The release name/number of the OS running on the system on which
+-netperf  was running. Units: ASCII Text
++netperf  was running. Units: ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_VERSION
+ The version number of the OS running on the system on which netperf
+-was running. Units: ASCII Text
++was running. Units: ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_MACHINE
+ The machine architecture of the machine on which netperf was
+-running. Units: ASCII Text.
++running. Units: ASCII Text.  Disabled in 2.7.0.
+ @item REMOTE_SYSNAME
+ @item REMOTE_SYSTEM_MODEL
+ @item REMOTE_RELEASE
+ @item REMOTE_VERSION
+ @item REMOTE_MACHINE
+ These are all like their ``LOCAL_'' counterparts only for the
+-netserver rather than netperf.
++netserver rather than netperf.  Disabled in 2.7.0.
+ @item LOCAL_INTERFACE_NAME
+ The name of the probable egress interface through which the data
+ connection went on the system running netperf. Example: eth0. Units:
+-ASCII Text.
++ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_INTERFACE_VENDOR
+ The vendor ID of the probable egress interface through which traffic
+ on the data connection went on the system running netperf. Units:
+ Hexadecimal IDs as might be found in a @file{pci.ids} file or at
+-@uref{http://pciids.sourceforge.net/,the PCI ID Repository}.
++@uref{http://pciids.sourceforge.net/,the PCI ID Repository}.  Disabled in 2.7.0.
+ @item LOCAL_INTERFACE_DEVICE
+ The device ID of the probable egress interface through which traffic
+ on the data connection went on the system running netperf. Units:
+ Hexadecimal IDs as might be found in a @file{pci.ids} file or at
+-@uref{http://pciids.sourceforge.net/,the PCI ID Repository}.
++@uref{http://pciids.sourceforge.net/,the PCI ID Repository}.  Disabled in 2.7.0.
+ @item LOCAL_INTERFACE_SUBVENDOR
+ The sub-vendor ID of the probable egress interface through which
+ traffic on the data connection went on the system running
+ netperf. Units: Hexadecimal IDs as might be found in a @file{pci.ids}
+ file or at @uref{http://pciids.sourceforge.net/,the PCI ID
+-Repository}.
++Repository}.  Disabled in 2.7.0.
+ @item LOCAL_INTERFACE_SUBDEVICE
+ The sub-device ID of the probable egress interface through which
+ traffic on the data connection went on the system running
+ netperf. Units: Hexadecimal IDs as might be found in a @file{pci.ids}
+ file or at @uref{http://pciids.sourceforge.net/,the PCI ID
+-Repository}.
++Repository}.  Disabled in 2.7.0.
+ @item LOCAL_DRIVER_NAME
+ The name of the driver used for the probable egress interface through
+ which traffic on the data connection went on the system running
+-netperf. Units: ASCII Text.
++netperf. Units: ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_DRIVER_VERSION
+ The version string for the driver used for the probable egress
+ interface through which traffic on the data connection went on the
+-system running netperf. Units: ASCII Text.
++system running netperf. Units: ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_DRIVER_FIRMWARE
+ The firmware version for the driver used for the probable egress
+ interface through which traffic on the data connection went on the
+-system running netperf. Units: ASCII Text.
++system running netperf. Units: ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_DRIVER_BUS
+ The bus address of the probable egress interface through which traffic
+ on the data connection went on the system running netperf. Units:
+-ASCII Text.
++ASCII Text.  Disabled in 2.7.0.
+ @item LOCAL_INTERFACE_SLOT
+ The slot ID of the probable egress interface through which traffic
+ on the data connection went on the system running netperf. Units:
+-ASCII Text.
++ASCII Text.  Disabled in 2.7.0.
+ @item REMOTE_INTERFACE_NAME
+ @item REMOTE_INTERFACE_VENDOR
+ @item REMOTE_INTERFACE_DEVICE
+@@ -3871,7 +3871,7 @@
+ @item REMOTE_DRIVER_BUS
+ @item REMOTE_INTERFACE_SLOT
+ These are all like their ``LOCAL_'' counterparts only for the
+-netserver rather than netperf.
++netserver rather than netperf.  Disabled in 2.7.0.
+ @item LOCAL_INTERVAL_USECS
+ The interval at which bursts of operations (sends, receives,
+ transactions) were attempted by netperf.  Specified by the
+@@ -3909,7 +3909,7 @@
+ @item REMOTE_SECURITY_ENABLED
+ @item REMOTE_SECURITY_SPECIFIC
+ A bunch of stuff related to what sort of security mechanisms (eg
+-SELINUX) were enabled on the systems during the test.
++SELINUX) were enabled on the systems during the test.  Disabled in 2.7.0.
+ @item RESULT_BRAND
+ The string specified by the user with the global @option{-B}
+ option. Units: ASCII Text.
+--- a/src/netlib.c
++++ b/src/netlib.c
+@@ -2406,6 +2406,22 @@
+     }
+   }
+ 
++#elif defined(__FreeBSD__)
++#include <sys/param.h>
++  /* FreeBSD introduced cpuset_setaffinity() in version 7.1 */
++#if (__FreeBSD_version > 701000)
++#include <sys/cpuset.h>  
++
++  cpuset_t mask;
++
++  CPU_ZERO(&mask);
++  CPU_SET(mapped_affinity, &mask);
++  if (cpuset_setaffinity(CPU_LEVEL_WHICH, CPU_WHICH_PID, -1,
++			 sizeof(mask), &mask)) {
++	perror("cpuset_setaffinity failed");
++	fflush(stderr);
++  }
++#endif /* __FreeBSD_version */    
+ #else
+   if (debug) {
+     fprintf(where,

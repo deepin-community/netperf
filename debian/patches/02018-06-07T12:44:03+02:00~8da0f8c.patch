@@ -1,0 +1,26 @@
+Description: netserver: fix mkstemp usage
+ mkstemp() returns an file descriptor, not a file pointer.
+ This results in segfaults when netserver tries to use it.
+ .
+ Use fdopen() to convert the file descriptor to a file pointer.
+Author: Sabrina Dubroca <sd@queasysnail.net>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/8da0f8c
+--- a/src/netserver.c
++++ b/src/netserver.c
+@@ -259,9 +259,15 @@
+     strncpy(FileName, NETPERF_NULL, sizeof(FileName));
+     where = fopen(FileName, "w");
+   } else {
++    int fd;
+     snprintf(FileName, sizeof(FileName), "%s" FILE_SEP "%s",
+              DEBUG_LOG_FILE_DIR, DEBUG_LOG_FILE);
+-    where = mkstemp(FileName);
++    fd = mkstemp(FileName);
++    if (fd < 0) {
++      fprintf(stderr, "netserver: creating debug file %s: %s\n", FileName, strerror(errno));
++      exit(1);
++    }
++    where = fdopen(fd, "w");
+   }
+ 
+   if (where == NULL) {

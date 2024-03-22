@@ -1,0 +1,14 @@
+Description: Fix a typo in the help output of post_proc.py
+Author: raj <raj@5bbd99f3-5903-0410-b283-f1d88047b228>
+Origin: upstream, https://github.com/HewlettPackard/netperf/commit/e93e990
+--- a/doc/examples/post_proc.py
++++ b/doc/examples/post_proc.py
+@@ -416,7 +416,7 @@
+     parser = argparse.ArgumentParser()
+     parser.add_argument("-i", "--individual", action='store_true',
+                         default=False,
+-                        help="Generate graps of individual tests")
++                        help="Generate graphs of individual tests")
+     parser.add_argument("-I", "--intervals", action='store_true',
+                         default=False,
+                         help="Emit the results for all intervals, not just peak")    

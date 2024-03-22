@@ -1,4 +1,20 @@
 #!/usr/bin/make -f
 
+# see FEATURE AREAS in dpkg-buildflags(1)
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
 %:
 	dh $@
+
+override_dh_autoreconf:
+	autoconf
+	autoheader
+
+override_dh_auto_configure:
+	dh_auto_configure -- --enable-demo
+
+execute_after_dh_auto_build:
+	$(MAKE) -C doc netperf.pdf netperf.html
+
+execute_after_dh_auto_install:
+	$(RM) -rv debian/netperf/usr/share/info
